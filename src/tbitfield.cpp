@@ -15,7 +15,7 @@ TBitField::TBitField(int len)
 {
 	if (len <= 0) throw invalid_argument("trying to create bitfield with negative length");
 	BitLen = len;
-	MemLen = (len / sizeof(TELEM) * 8) + 1;
+	MemLen = (len / sizeof(TELEM) * 8) + (len % (sizeof(TELEM) * 8) != 0);
 	pMem = new TELEM[MemLen];
 	if (pMem != nullptr) {
 		for (size_t i = 0; i < MemLen; i++) {
@@ -150,8 +150,12 @@ TBitField TBitField::operator~(void) // отрицание
 istream& operator>>(istream& istr, TBitField& bf) // ввод
 {
 	unsigned int tmp;
-	istr >> tmp;
-	bf.SetBit(tmp);
+	for (size_t i = 0; i < bf.BitLen; i++) {
+		istr >> tmp;
+		if (tmp == '1') bf.SetBit(i);
+		else if (tmp == '0') bf.ClrBit(i);
+		else throw exception("invalid_value");
+	}
 	return istr;
 }
 
